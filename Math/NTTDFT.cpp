@@ -1,88 +1,81 @@
-//NTT
+//NTT Benq
 
-struct NTT{
-   ll root_1, root, root_pw;
-   inline ll bp(ll a, ll b){
-      if(b==0) return 1;
-      if(b&1) return (a*(bp(a, b-1)))%mod;
-      ll x=bp(a, b>>1)%mod;
-      x=(x+mod)%mod;
-      return ((x*x)%mod+mod)%mod;;
-   }
-   inline ll inverse(ll a){
-      return bp(a, mod-2);
-   }
-   inline void build(){
-      // Si:c*pow(2, k)+1=mod
-      // Entonces root cumple:
-      // pow(root, 1<<(pow(2, k))=1mod
-      // Mejor complejidad=Primary root test.
-      root_pw=1<<23;
-      FER(i,2,1e5+1) if(bp(i, root_pw)==1){ root=i; break;}
-      root_1=inverse(root);
-   }
-   inline void fft(vi &a , bool inv){
-      ll n=sz(a);
-      for(ll i=1, j=0; i<n; i++){
-         ll bt=n>>1;
-         for(; j&bt; bt>>=1) j^=bt;
-         j^=bt;
-         if(i<j) swap(a[i], a[j]);
-      }
-      for(ll len=2; len<=n; len<<=1){
-         ll wlen=inv? root_1: root;
-         for(ll i=len; i<root_pw; i<<=1) wlen=(sqr(wlen)%mod+mod)%mod;
-         for(ll i=0; i<n; i+=len){
-            ll w=1;
-            for(ll j=0; j<len/2; j++){
-               ll u=a[i+j], v=(a[i+j+len/2]*w)%mod;
-               a[i+j]=u+v<mod? u+v: u+v-mod;
-               a[i+j+len/2]=u-v>=0? u-v: u-v+mod;
-               w=((w*wlen)%mod+mod)%mod;
-            }
-         }
-      }
-      if(inv){
-         ll n_1=inverse(sz(a));
-         for(auto &xd: a) xd=((xd*n_1)%mod+mod)%mod;
-      }
-   }
-   inline vi GetConvolution(vi a, vi b){
-      ll n=1;
-      while(n<sz(a)+sz(b)) n<<=1;
-      a.resize(n), b.resize(n);
-      fft(a, false), fft(b, false);
-      FER(i,0,n) a[i]=((a[i]*b[i])%mod+mod)%mod;
-      fft(a, true);
-      return a;
-   }
-   inline vi BinPolyExp(vi &a, ll b){
-      if(b==1) return a;
-      ll n=1;
-      while(n<sz(a)*b) n<<=1;
-      a.resize(n);
-      fft(a, false);
-      for(auto &xd: a) xd=bp(xd, b);
-      fft(a, true);
-      return a;
-   }
-}ntt;
+typedef long double ld;
+typedef complex<double> cd;
 
+const int MOD = (119 << 23) + 1, root = 3; // = 998244353
+// NTT: For p < 2^30 there is also e.g. (5 << 25, 3),
+// (7 << 26, 3), (479 << 21, 3) and (483 << 21, 5).
+// The last two are > 10^9.
 
-int main(){
-   fastio;
-   NTT ntt;
-   ntt.build();
-   ll n, k; cin>>n>>k;
-   vi v(10);
-   FER(i,0,k){
-      ll x; cin>>x;
-      v[x]=1;
-   }
-   ll ans=0;
-   vi froz=ntt.BinPolyExp(v, n/2);
-   for(auto xd: froz) ans=(ans+sqr(xd))%mod;
-   ans=(ans+mod)%mod;
-   cout<<ans<<endl;
-   return 0;
+const ld PI = 4*atan((ld)1);
+int size(int s){ return s > 1 ? 32 - __builtin_clz(s-1) : 0; }
+
+int sum(int a, const int &b){ if((a += b) >= MOD) a -= MOD; return a; }
+int sub(int a, const int &b){ if((a -= b) < 0) a += MOD; return a; }
+int mult(int a, const int &b){ return (1LL*a*b) % MOD; }
+
+int binpow(ll x, ll p){
+	int ans;
+	for(ans = 1; p; p >>= 1){
+		if(p&1LL) ans = mult(ans,x);
+		x = mult(x,x);
+	}
+	return ans;
 }
+
+void genRoots(vector<cd>& roots){ // primitive n-th roots of unity
+	int n = sz(roots);
+	ld ang = 2*PI/n;
+	for(int i = 0; i < n; ++i)
+		roots[i] = cd(cos(ang*i),sin(ang*i));
+}
+
+void genRoots(vector<int>& roots){
+	int n = sz(roots);
+	int r = binpow(root,(MOD-1)/n);
+	roots[0] = 1;
+	for(int i = 1; i < n; ++i)
+		roots[i] = mult(roots[i-1],r);
+}
+
+void Fft(vector<int> &a, const vector<int>& roots, bool inv = 0){
+	int n = sz(a);
+	// sort numbers from 0 to n-1 by reverse bit representation
+	for(int i = 1, j = 0; i < n; ++i){
+		int bit = n >> 1;
+		for(; j&bit; bit >>= 1) j^= bit;
+		j ^= bit;
+		if(i < j) swap(a[i],a[j]);
+	}
+	for(int len = 2; len <= n; len <<= 1)
+		for(int i = 0; i < n; i += len)
+			for(int j = 0; j < len/2; ++j){
+				int ind = n/len*j;
+				if(inv && ind) ind = n-ind;
+				// for xor conv don't multiply by roots[ind]
+				int u = a[i+j], v = mult(a[i+j+len/2],roots[ind]);
+				a[i+j] = sum(u,v), a[i+j+len/2] = sub(u,v);
+			}
+	if(inv){
+		int i = binpow(n,MOD-2);
+		for(int &x : a) x = mult(x,i);
+	}
+}
+
+vector<int> Mult(vector<int> a, vector<int> b){
+	if(!min(sz(a),sz(b))) return {};
+	int s = sz(a)+sz(b)-1, n = 1 << size(s);
+	vector<int> roots(n);
+	genRoots(roots);
+	a.resize(n); Fft(a,roots);
+	b.resize(n); Fft(b,roots);
+	for(int i = 0; i < n; ++i)
+		a[i] = mult(a[i],b[i]);
+	Fft(a,roots,true);
+	a.resize(s);
+	return a;
+}
+
+
+

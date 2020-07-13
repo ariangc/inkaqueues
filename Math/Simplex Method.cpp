@@ -1,55 +1,106 @@
-/* Simplex Method
-   Autor: el Vasito
+/* Thanks Iván Galbán Smith */
+
+/*
+	Parametric Self-Dual Simplex method
+	Description:
+	- Solve a canonical LP:
+			 min. c x
+		s.t. A x <= b
+			 x >= 0
+	Complexity: O(n+m) iterations on average
+	Tested: http://codeforces.com/contest/375/problem/E
 */
 
-vector<int> X,Y;
-vector<vector<double> > A;
-vector<double> b,c;
-double z;
-int n,m;
-void pivot(int x,int y){
-   swap(X[y],Y[x]);
-   b[x]/=A[x][y];
-   FER(i,0,m)if(i!=y)A[x][i]/=A[x][y];
-   A[x][y]=1/A[x][y];
-   FER(i,0,n)if(i!=x&&abs(A[i][y])>EPS){
-      b[i]-=A[i][y]*b[x];
-      FER(j,0,m)if(j!=y)A[i][j]-=A[i][y]*A[x][j];
-      A[i][y]=-A[i][y]*A[x][y];
-   }
-   z+=c[y]*b[x];
-   FER(i,0,m)if(i!=y)c[i]-=c[y]*A[x][i];
-   c[y]=-c[y]*A[x][y];
+const double eps = 1e-9, oo = numeric_limits<double>::infinity();
+
+typedef vector<double> vec;
+typedef vector<vec> mat;
+
+double simplexMethodPD(mat &A, vec &b, vec &c)
+{
+	int n = c.size(), m = b.size();
+	mat T(m + 1, vec(n + m + 1));
+	vector<int> base(n + m), row(m);
+
+	for(int j = 0; j < m; ++j)
+	{
+		for (int i = 0; i < n; ++i)
+			T[j][i] = A[j][i];
+		T[j][n + j] = 1;
+		base[row[j] = n + j] = 1;
+		T[j][n + m] = b[j];
+	}
+
+	for (int i = 0; i < n; ++i)
+		T[m][i] = c[i];
+
+	while (1)
+	{
+		int p = 0, q = 0;
+		for (int i = 0; i < n + m; ++i)
+			if (T[m][i] <= T[m][p])
+				p = i;
+
+		for (int j = 0; j < m; ++j)
+			if (T[j][n + m] <= T[q][n + m])
+				q = j;
+
+		double t = min(T[m][p], T[q][n + m]);
+
+		if (t >= -eps)
+		{
+			vec x(n);
+			for (int i = 0; i < m; ++i)
+				if (row[i] < n) x[row[i]] = T[i][n + m];
+			// x is the solution
+			return -T[m][n + m]; // optimal
+		}
+
+		if (t < T[q][n + m])
+		{
+			// tight on c -> primal update
+			for (int j = 0; j < m; ++j)
+				if (T[j][p] >= eps)
+					if (T[j][p] * (T[q][n + m] - t) >= 
+						T[q][p] * (T[j][n + m] - t))
+						q = j;
+
+			if (T[q][p] <= eps)
+				return oo; // primal infeasible
+		}
+		else
+		{
+			// tight on b -> dual update
+			for (int i = 0; i < n + m + 1; ++i)
+				T[q][i] = -T[q][i];
+
+			for (int i = 0; i < n + m; ++i)
+				if (T[q][i] >= eps)
+					if (T[q][i] * (T[m][p] - t) >= 
+						T[q][p] * (T[m][i] - t))
+						p = i;
+
+			if (T[q][p] <= eps)
+				return -oo; // dual infeasible
+		}
+
+		for (int i = 0; i < m + n + 1; ++i)
+			if (i != p) T[q][i] /= T[q][p];
+
+		T[q][p] = 1; // pivot(q, p)
+		base[p] = 1;
+		base[row[q]] = 0;
+		row[q] = p;
+
+		for (int j = 0; j < m + 1; ++j)
+			if (j != q)
+			{
+				double alpha = T[j][p];
+				for (int i = 0; i < n + m + 1; ++i)
+					T[j][i] -= T[q][i] * alpha;
+			}
+	}
+
+	return oo;
 }
-pair<double,vector<double> > simplex( // maximize c^T x s.t. Ax<=b, x>=0
-      vector<vector<double> > _A, vector<double> _b, vector<double> _c){
-   // returns pair (maximum value, solution vector)
-   A=_A;b=_b;c=_c;
-   n=b.size();m=c.size();z=0.;
-   X=vector<int>(m);Y=vector<int>(n);
-   FER(i,0,m)X[i]=i;
-   FER(i,0,n)Y[i]=i+m;
-   while(1){
-      int x=-1,y=-1;
-      double mn=-EPS;
-      FER(i,0,n)if(b[i]<mn)mn=b[i],x=i;
-      if(x<0)break;
-      FER(i,0,m)if(A[x][i]<-EPS){y=i;break;}
-      assert(y>=0); // no solution to Ax<=b
-      pivot(x,y);
-   }
-   while(1){
-      double mx=EPS;
-      int x=-1,y=-1;
-      FER(i,0,m)if(c[i]>mx)mx=c[i],y=i;
-      if(y<0)break;
-      double mn=1e200;
-      FER(i,0,n)if(A[i][y]>EPS&&b[i]/A[i][y]<mn)
-         mn=b[i]/A[i][y],x=i;
-      assert(x>=0); // c^T x is unbounded
-      pivot(x,y);
-   }
-   vector<double> r(m);
-   FER(i,0,n)if(Y[i]<m)r[Y[i]]=b[i];
-   return mp(z,r);
-}
+

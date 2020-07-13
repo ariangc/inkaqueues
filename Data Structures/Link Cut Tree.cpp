@@ -1,4 +1,10 @@
 //Link cut tree
+//Para usar el Link Cut Tree:
+//	1. Crear el tree (LinkCutTree lct)
+//	2. Las operaciones se llaman con la referencia del nodo i
+//	   Por ejemplo: lct.link(&lct.nos[i], &lct.nos[j])
+//						 lct.cut(...)
+//						 lct.connected(...)
 
 const int N = 1e5 + 2;
 

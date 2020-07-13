@@ -10,23 +10,33 @@ g++ main.cpp -std=c++14 -o main
 ((count = 0))
 ((testCases = 1000))
 for((i = 1; ; i++)); do
-   echo "Running on test ${i}"
-   ./gen $i > test
-   ./ac < test > out1
-   ./main < test > out2
-   diff -w out1 out2 || break
-   ((count++))
+	echo "Running on test ${i}"
+	./gen $i > test
+	./ac < test > out1
+	./main < test > out2
+	
+	# Para chequear que no de RTE
+	if [ $? -eq 0 ]
+	then
+		echo "Ok"
+	else
+		break
+	fi
+	# Para chequear igualdad de output
+	diff -w out1 out2 || break
+	((count++))
 done
 
 if [ $count -eq $testCases ]
 then
-   echo "Accepted"
+	echo "Accepted"
 else
-   ((count++))
-   echo "Wrong Answer on test ${count}"
-   more test
-   echo "Answer : "
-   more out1
-   echo "Output : "
-   more out2
+	((count++))
+	echo "Wrong Answer on test ${count}"
+	more test
+	echo "Answer : "
+	more out1
+	echo "Output : "
+	more out2
 fi
+
