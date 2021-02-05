@@ -1,11 +1,12 @@
 // Persistent Segment Tree - Gracias Phibrain
 // Update en punto x, query en intervalo [l,r)
 // Cada llamada de update retorna un nuevo root
+
 // usage:
-//		Llenar el vector st.arr (con push back) y correr build()
-// 	update(root,pos,x): Update +x en pos de version en root
-//		query(root,l,r): Query de Op en intervalo [l,r)
-//		clear(): Limpia todo
+//	Llenar el vector st.arr (con push back) y correr build()
+//	update(root,pos,x): Update +x en pos de version en root
+//	query(root,l,r): Query de Op en intervalo [l,r)
+//	clear(): Limpia todo
 
 struct PersistentST{
 	int n;
