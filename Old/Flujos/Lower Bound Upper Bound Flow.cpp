@@ -19,8 +19,8 @@ ll graph[N1][N1];
 vector<tri> adj[N1];
 vii adj1[N1];
  
-inline void add(ll a, ll b, ll d, ll c){
-   adj[a].pb(tri{b, {d, c}});
+inline void add(ll a, ll b, ll c, ll d){
+   adj[a].pb(tri{b, {c, d}});
 }
  
 inline ll solve(ll x, ll sn, ll sr, ll n, PushRelabel &pr){

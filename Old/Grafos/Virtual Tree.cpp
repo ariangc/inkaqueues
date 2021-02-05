@@ -1,6 +1,8 @@
-//Virtual Tree Construction in O(klogk)
-//Needs lca implementation
-//vert = Vertices that belong to virtual tree
+// Construccion del Virtual Tree en O(klog(k))
+// Se necesita la implementacion del LCA
+// usage:
+//		buildTree(vert): Construir el VT de los vertices en vert.
+//							  Retorna la raiz.
 
 vector<int> g[N]; //Virtual Tree
 
