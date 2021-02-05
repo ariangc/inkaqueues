@@ -1,5 +1,5 @@
 // Construccion del Virtual Tree en O(klog(k))
-// Se necesita la implementacion del LCA
+// Se necesita la implementacion del LCA.
 // usage:
 //		buildTree(vert): Construir el VT de los vertices en vert.
 //							  Retorna la raiz.

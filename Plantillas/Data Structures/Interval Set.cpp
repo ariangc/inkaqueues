@@ -2,8 +2,8 @@
 // Añade y quita intervalos en O(logn). 
 // Ans guarda el tamaño de la unión de los intervalos
 // usage:
-//		insert(from,to): Insertar intervalo [from,to]
-//		remove(from,to): Borrar intervalos en [from,to]
+//		insert(from,to): Insertar intervalo [from,to].
+//		remove(from,to): Borrar intervalos en [from,to].
 
 struct IntervalSet{
 	set<ii> st;
