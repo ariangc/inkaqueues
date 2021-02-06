@@ -12,11 +12,11 @@ struct IntervalSet{
 
 	void insert(int from, int to){
 		vector<ii> toer;
-		auto it = st.upper_bound(ii(to + 1,oo));
+		auto it = st.upper_bound(ii(to + 1,oo)); // +1 combinar consecutivos
 		while(it != st.begin()){
 			it --;
 			ii x = *it;
-			if(x.ss + 1 < from) break;
+			if(x.ss + 1 < from) break; // +1
 			toer.pb(x);
 		}
 		for(auto x: toer){
@@ -30,12 +30,12 @@ struct IntervalSet{
 
 	void remove(int from, int to){
 		vector<ii> toer;
-		auto it = st.upper_bound(ii(to + 1,oo));
+		auto it = st.upper_bound(ii(to + 1,oo)); // +1
 		if(it == st.begin()) return;
 		while(it != st.begin()){
 			it --;
 			ii x = *it;
-			if(x.ss + 1 < from) break;
+			if(x.ss + 1 < from) break; // +1
 			toer.pb(x);
 		}
 		for(auto x: toer){
