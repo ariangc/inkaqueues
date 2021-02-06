@@ -4,6 +4,7 @@
 // usage:
 //		insert(from,to): Insertar intervalo [from,to].
 //		remove(from,to): Borrar intervalos en [from,to].
+//		contains(from,to): Chekear si [from,to] está en el conjunto.
 
 struct IntervalSet{
 	set<ii> st;
@@ -11,11 +12,11 @@ struct IntervalSet{
 
 	void insert(int from, int to){
 		vector<ii> toer;
-		auto it = st.upper_bound(ii(to,oo));
+		auto it = st.upper_bound(ii(to + 1,oo));
 		while(it != st.begin()){
 			it --;
 			ii x = *it;
-			if(x.ss < from) break;
+			if(x.ss + 1 < from) break;
 			toer.pb(x);
 		}
 		for(auto x: toer){
@@ -29,12 +30,12 @@ struct IntervalSet{
 
 	void remove(int from, int to){
 		vector<ii> toer;
-		auto it = st.upper_bound(ii(to,oo));
+		auto it = st.upper_bound(ii(to + 1,oo));
 		if(it == st.begin()) return;
 		while(it != st.begin()){
 			it --;
 			ii x = *it;
-			if(x.ss < from) break;
+			if(x.ss + 1 < from) break;
 			toer.pb(x);
 		}
 		for(auto x: toer){
@@ -43,5 +44,13 @@ struct IntervalSet{
 			if(x.ss > to) st.insert(ii(to+1, x.ss)), ans += x.ss - to;
 			if(x.ff < from) st.insert(ii(x.ff, from-1)), ans += from - x.ff;
 		}
+	}
+
+	bool contains(int from, int to){
+		auto it = st.upper_bound(ii(right, oo));
+		if(it == st.begin()) return false;
+		it --;
+		ii ivl = *it;
+		return (from >= ivl.ff and to <= ivl.ss);
 	}
 };
